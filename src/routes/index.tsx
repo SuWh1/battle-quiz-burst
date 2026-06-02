@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+
+import { getQuestions } from "@/lib/questions.functions";
+
+const questionsQueryOptions = queryOptions({
+  queryKey: ["questions"],
+  queryFn: () => getQuestions(),
+});
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -10,37 +18,20 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Яркая игра-викторина в стиле игрового шоу." },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(questionsQueryOptions),
+  errorComponent: ({ error }) => (
+    <main className="flex min-h-screen items-center justify-center px-6 text-center text-white">
+      <div>
+        <h1 className="text-3xl font-black">Не удалось загрузить вопросы</h1>
+        <p className="mt-3 text-white/80">{error.message}</p>
+      </div>
+    </main>
+  ),
   component: Index,
 });
 
 function Index() {
-  const questions = [
-    {
-      q: "Какая планета самая большая в Солнечной системе?",
-      options: ["Земля", "Юпитер", "Сатурн", "Нептун"],
-      correct: 1,
-    },
-    {
-      q: "Сколько естественных спутников у Земли?",
-      options: ["0", "1", "2", "3"],
-      correct: 1,
-    },
-    {
-      q: "Как называется галактика, в которой мы живём?",
-      options: ["Андромеда", "Сомбреро", "Млечный Путь", "Треугольник"],
-      correct: 2,
-    },
-    {
-      q: "Кто первым полетел в космос?",
-      options: ["Нил Армстронг", "Юрий Гагарин", "Алексей Леонов", "Джон Гленн"],
-      correct: 1,
-    },
-    {
-      q: "Какая звезда ближе всего к Земле?",
-      options: ["Сириус", "Полярная", "Альфа Центавра", "Солнце"],
-      correct: 3,
-    },
-  ];
+  const { data: questions } = useSuspenseQuery(questionsQueryOptions);
 
   const [screen, setScreen] = useState<"start" | "quiz" | "end">("start");
   const [current, setCurrent] = useState(0);
