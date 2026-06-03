@@ -20,10 +20,10 @@ export const Route = createFileRoute("/")({
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(questionsQueryOptions),
   errorComponent: ({ error }) => (
-    <main className="flex min-h-screen items-center justify-center px-6 text-center text-white">
+    <main className="flex min-h-screen items-center justify-center bg-background px-6 text-center text-foreground">
       <div>
         <h1 className="text-3xl font-black">Не удалось загрузить вопросы</h1>
-        <p className="mt-3 text-white/80">{error.message}</p>
+        <p className="mt-3 text-muted-foreground">{error.message}</p>
       </div>
     </main>
   ),
@@ -65,21 +65,15 @@ function Index() {
   };
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden px-6 py-12">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-fuchsia-500/30 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-indigo-400/30 blur-3xl" />
-      </div>
+    <main className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-background px-6 py-12 text-foreground">
 
       {screen === "start" && (
         <>
           <header className="mt-8 text-center">
-            <h1 className="text-6xl font-black tracking-tight drop-shadow-[0_6px_24px_rgba(0,0,0,0.45)] sm:text-7xl md:text-8xl">
-              <span className="bg-gradient-to-b from-yellow-200 via-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                QUIZ BATTLE
-              </span>
+            <h1 className="font-display text-6xl font-normal tracking-tight text-foreground sm:text-7xl md:text-8xl">
+              Quiz Battle
             </h1>
-            <p className="mt-4 text-lg font-medium text-white/80 sm:text-xl">
+            <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
               Сражайся за звание чемпиона викторины
             </p>
           </header>
@@ -88,33 +82,33 @@ function Index() {
             <button
               type="button"
               onClick={startGame}
-              className="rounded-full bg-gradient-to-b from-orange-400 via-pink-500 to-fuchsia-600 px-20 py-8 text-3xl font-black tracking-wider text-white shadow-[0_20px_50px_-10px_rgba(236,72,153,0.7),inset_0_-6px_0_rgba(0,0,0,0.25),inset_0_2px_0_rgba(255,255,255,0.4)] ring-4 ring-white/20 transition-all duration-200 hover:scale-105 active:translate-y-1 sm:text-4xl md:px-28 md:py-10 md:text-5xl"
+              className="rounded-md bg-primary px-12 py-5 text-base font-medium tracking-wide text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring sm:px-16 sm:py-6 sm:text-lg"
             >
-              ИГРАТЬ
+              Try Quiz Battle
             </button>
           </div>
 
-          <footer className="text-sm text-white/50">© Quiz Battle</footer>
+          <footer className="text-sm text-muted-foreground">© Quiz Battle</footer>
         </>
       )}
 
       {screen === "quiz" && (
         <div className="flex w-full max-w-3xl flex-1 flex-col">
           <div className="mt-4 text-center">
-            <div className="text-sm font-semibold uppercase tracking-widest text-white/70">
+            <div className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
               Вопрос {current + 1} из {questions.length}
             </div>
-            <div className="mx-auto mt-3 h-3 w-full max-w-md overflow-hidden rounded-full bg-white/15 ring-1 ring-white/20">
+            <div className="mx-auto mt-3 h-2 w-full max-w-md overflow-hidden rounded-full bg-secondary ring-1 ring-border">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-orange-500 transition-all duration-500"
+                className="h-full rounded-full bg-primary transition-all duration-500"
                 style={{ width: `${((current + 1) / questions.length) * 100}%` }}
               />
             </div>
-            <div className="mt-2 text-sm text-white/70">Счёт: {score}</div>
+            <div className="mt-2 text-sm text-muted-foreground">Счёт: <span className="font-medium text-foreground">{score}</span></div>
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8">
-            <h2 className="max-w-2xl text-center text-3xl font-bold leading-tight text-white drop-shadow-md sm:text-4xl md:text-5xl">
+            <h2 className="font-display max-w-2xl text-center text-3xl font-normal leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
               {questions[current].q}
             </h2>
 
@@ -122,16 +116,16 @@ function Index() {
               {questions[current].options.map((opt, idx) => {
                 const isCorrect = idx === questions[current].correct;
                 let cls =
-                  "bg-white/10 hover:bg-white/20 ring-1 ring-white/25 text-white";
+                  "bg-card text-card-foreground border border-border hover:border-primary/40 hover:bg-secondary";
                 if (selected !== null) {
                   if (idx === selected) {
                     cls = isCorrect
-                      ? "bg-green-500 ring-2 ring-green-300 text-white"
-                      : "bg-red-500 ring-2 ring-red-300 text-white";
+                      ? "bg-accent text-accent-foreground border border-accent"
+                      : "bg-destructive text-destructive-foreground border border-destructive";
                   } else if (isCorrect) {
-                    cls = "bg-green-500/60 ring-1 ring-green-300 text-white";
+                    cls = "bg-accent/40 text-accent-foreground border border-accent/60";
                   } else {
-                    cls = "bg-white/5 ring-1 ring-white/10 text-white/60";
+                    cls = "bg-card/50 text-muted-foreground border border-border";
                   }
                 }
                 return (
@@ -140,7 +134,7 @@ function Index() {
                     type="button"
                     disabled={locked}
                     onClick={() => handleAnswer(idx)}
-                    className={`w-full rounded-2xl px-6 py-5 text-left text-lg font-semibold shadow-lg backdrop-blur transition-all duration-200 disabled:cursor-not-allowed sm:text-xl ${cls}`}
+                    className={`w-full rounded-lg px-6 py-4 text-left text-base font-medium transition-colors duration-150 disabled:cursor-not-allowed sm:text-lg ${cls}`}
                   >
                     {opt}
                   </button>
@@ -153,21 +147,21 @@ function Index() {
 
       {screen === "end" && (
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <h2 className="text-5xl font-black text-white drop-shadow-lg sm:text-6xl">
+          <h2 className="font-display text-5xl font-normal tracking-tight text-foreground sm:text-6xl">
             Игра окончена!
           </h2>
-          <p className="mt-6 text-2xl text-white/90">
+          <p className="mt-6 text-xl text-muted-foreground">
             Твой счёт:{" "}
-            <span className="font-black text-yellow-300">
+            <span className="font-medium text-primary">
               {score} / {questions.length}
             </span>
           </p>
           <button
             type="button"
             onClick={startGame}
-            className="mt-10 rounded-full bg-gradient-to-b from-orange-400 via-pink-500 to-fuchsia-600 px-12 py-5 text-2xl font-black tracking-wider text-white shadow-[0_15px_40px_-10px_rgba(236,72,153,0.7)] ring-4 ring-white/20 transition-all duration-200 hover:scale-105 active:translate-y-1"
+            className="mt-10 rounded-md bg-primary px-10 py-4 text-base font-medium text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
           >
-            ИГРАТЬ ЕЩЁ
+            Играть ещё
           </button>
         </div>
       )}
