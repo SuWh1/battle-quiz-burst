@@ -57,9 +57,18 @@ Tasks:
    - Also create `VERCEL_ENV_VALUES.local.md` with short instructions for which Vercel environments to add them to: Production, Preview, and Development, and with human-friendly labels like “Supabase anon/public key” and “Supabase service role secret key.”
    - Make sure `VERCEL_ENV_IMPORT.local.env` and `VERCEL_ENV_VALUES.local.md` are ignored by git and never committed.
    - Do not print real secret values in the chat/final response; only put them in the local ignored files.
-7. Run the local install/build/test steps needed to verify the fix.
-8. If build fails, fix the real cause instead of hiding errors.
-9. Commit and push the deployment fix to GitHub if changes are needed.
+7. Check for common Vite/Vercel build issues:
+   - If CSS has remote `@import url("https://...")` font imports, make sure the build accepts it.
+   - If Lightning CSS errors with `@import rules must precede all rules`, move imports to the top or move external font links into the HTML/document head.
+   - Do not hide the error by disabling the Vite overlay; fix the CSS/import order.
+8. Check Supabase service-role usage:
+   - Search for `SUPABASE_SERVICE_ROLE_KEY`, `service_role`, `supabaseAdmin`, and server Supabase clients.
+   - If code only reads public data protected by SELECT/RLS policies, use the anon/public key instead of requiring service role.
+   - Require `SUPABASE_SERVICE_ROLE_KEY` only for real backend admin actions that must bypass RLS.
+   - Never put service-role keys in `VITE_*`, frontend code, or copy-paste files meant for public client variables.
+9. Run the local install/build/test steps needed to verify the fix.
+10. If build fails, fix the real cause instead of hiding errors.
+11. Commit and push the deployment fix to GitHub if changes are needed.
 
 Important:
 - Never commit real `.env`.
@@ -68,6 +77,8 @@ Important:
 - Do not leak API keys, tokens, database URLs, private keys, service-role keys, or secrets.
 - Public frontend variables such as `VITE_*`, `NEXT_PUBLIC_*`, or similar are visible in the browser, so never put private secrets there.
 - Supabase anon/public keys may be used in frontend variables; Supabase service role keys must stay backend/server-only.
+- Do not require `SUPABASE_SERVICE_ROLE_KEY` unless the project actually needs backend admin privileges.
+- Remote font CSS imports can break Lightning CSS/Vite builds; prefer document/head font links when needed.
 - Do not change unrelated app logic unless required for deployment.
 - Prefer minimal, correct Vercel config.
 
@@ -80,6 +91,8 @@ Final response should include:
 - Required Vercel environment variables
 - For each env var: what value should go there and where to find it, without revealing the actual secret value in chat
 - For Supabase env vars: clearly say whether it needs the project URL, anon/public key, project ID, or service role secret key
+- Whether service role is actually required, and why
+- Any CSS/font import fixes made for Vite/Vercel
 - If `.env` exists: confirm `VERCEL_ENV_IMPORT.local.env` was created for Vercel import/paste and is ignored by git
 - If `.env` exists: confirm `VERCEL_ENV_VALUES.local.md` was created with instructions and is ignored by git
 - Exact Vercel settings to use

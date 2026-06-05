@@ -13,6 +13,8 @@ Use this guide when adding values to Vercel Project Settings → Environment Var
 - `VITE_SUPABASE_PROJECT_ID`: the project ref from the URL, the part before `.supabase.co`.
 - `SUPABASE_SERVICE_ROLE_KEY`: secret server-only key. Add only if backend/server code needs it.
 
+Most student apps do not need `SUPABASE_SERVICE_ROLE_KEY`. If the app only reads public data or uses normal user auth/RLS, use the anon/public key.
+
 ## Where to find them
 
 In Supabase, open Project Settings → API:
@@ -27,4 +29,5 @@ In Supabase, open Project Settings → API:
 - Commit `.env.example` with names only.
 - Never put service role keys into `VITE_*` variables.
 - `VITE_*` variables are visible in the browser.
+- Do not add service role keys to Vercel unless server code truly needs admin privileges.
 - Add Vercel variables to Production, Preview, and Development unless the project needs different values per environment.
