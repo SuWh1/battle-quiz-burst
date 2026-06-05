@@ -14,6 +14,7 @@ dist-ssr
 .env.*
 !.env.example
 VERCEL_ENV_VALUES.local.md
+VERCEL_ENV_IMPORT.local.env
 .output
 .vinxi
 .tanstack/**
