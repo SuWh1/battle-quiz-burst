@@ -48,7 +48,9 @@ Tasks:
    - If `.env` is already tracked by git, remove it from git tracking without deleting the local file.
    - List exactly what must be added in Vercel Project Settings → Environment Variables.
    - For each Vercel env var, say where the student should get the value, for example Supabase project settings, Firebase console, Clerk dashboard, Stripe dashboard, backend URL, or local `.env`.
-   - Do not print, expose, or commit real secret values.
+   - If `.env` exists locally, create `VERCEL_ENV_VALUES.local.md` with ready-to-copy Vercel environment variable rows using the actual local `.env` values.
+   - Make sure `VERCEL_ENV_VALUES.local.md` is ignored by git and never committed.
+   - Do not print real secret values in the chat/final response; only put them in the local ignored file.
 7. Run the local install/build/test steps needed to verify the fix.
 8. If build fails, fix the real cause instead of hiding errors.
 9. Commit and push the deployment fix to GitHub if changes are needed.
@@ -56,6 +58,7 @@ Tasks:
 Important:
 - Never commit real `.env`.
 - Always commit `.env.example`.
+- If creating a ready-to-copy env handoff file, name it `VERCEL_ENV_VALUES.local.md`, keep it local only, and confirm it is ignored by git.
 - Do not leak API keys, tokens, database URLs, private keys, service-role keys, or secrets.
 - Public frontend variables such as `VITE_*`, `NEXT_PUBLIC_*`, or similar are visible in the browser, so never put private secrets there.
 - Do not change unrelated app logic unless required for deployment.
@@ -68,7 +71,8 @@ Final response should include:
 - Why Vercel showed 404
 - What files/settings were changed
 - Required Vercel environment variables
-- For each env var: what value should go there and where to find it, without revealing the actual secret value
+- For each env var: what value should go there and where to find it, without revealing the actual secret value in chat
+- If `.env` exists: confirm `VERCEL_ENV_VALUES.local.md` was created for copy-paste and is ignored by git
 - Exact Vercel settings to use
 - Confirmation that `.env` is ignored and `.env.example` is committed
 - Whether it is ready to redeploy
