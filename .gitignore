@@ -35,5 +35,3 @@ VERCEL_ENV_VALUES.local.md
 *.njsproj
 *.sln
 *.sw?
-
-.env
