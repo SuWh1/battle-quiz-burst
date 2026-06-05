@@ -14,25 +14,32 @@ Context:
 - The student may not know how to handle `.env` safely.
 
 Tasks:
-1. Inspect the project structure, package.json, framework config, routes, API/server files, and any existing vercel.json.
-2. Determine the app type:
+1. First verify you are working in the correct local repository:
+   - Print the current folder path.
+   - Check the git remote URL.
+   - Check the current branch.
+   - Check whether there are multiple local clones of the same GitHub repo.
+   - If the open editor folder and the git repo folder are different, stop and explain the mismatch before editing files.
+   - Do not make changes in a duplicate/old clone unless the student confirms it is the correct project folder.
+2. Inspect the project structure, package.json, framework config, routes, API/server files, and any existing vercel.json.
+3. Determine the app type:
    - Static frontend app
    - Vite/React SPA
    - Next.js app
    - TanStack Start / Nitro SSR app
    - Express/custom backend
    - Full-stack app with separate frontend/backend
-3. Fix the Vercel deployment setup:
+4. Fix the Vercel deployment setup:
    - Correct Root Directory
    - Correct Install Command
    - Correct Build Command
    - Correct Output Directory
    - Correct framework preset
    - Add or fix vercel.json only if needed
-4. Fix routing:
+5. Fix routing:
    - For SPA apps, ensure page refreshes/deep links work.
    - For backend/server apps, ensure API/server routes are deployed correctly.
-5. Check environment variables:
+6. Check environment variables:
    - Find all required env vars in the code.
    - Compare required env vars with `.env`, `.env.local`, `.env.example`, README, and deployment docs if present.
    - Add `.env` and `.env.*` to `.gitignore`.
@@ -42,9 +49,9 @@ Tasks:
    - List exactly what must be added in Vercel Project Settings → Environment Variables.
    - For each Vercel env var, say where the student should get the value, for example Supabase project settings, Firebase console, Clerk dashboard, Stripe dashboard, backend URL, or local `.env`.
    - Do not print, expose, or commit real secret values.
-6. Run the local install/build/test steps needed to verify the fix.
-7. If build fails, fix the real cause instead of hiding errors.
-8. Commit and push the deployment fix to GitHub if changes are needed.
+7. Run the local install/build/test steps needed to verify the fix.
+8. If build fails, fix the real cause instead of hiding errors.
+9. Commit and push the deployment fix to GitHub if changes are needed.
 
 Important:
 - Never commit real `.env`.
@@ -55,6 +62,8 @@ Important:
 - Prefer minimal, correct Vercel config.
 
 Final response should include:
+- The exact local folder path that was changed
+- The GitHub remote URL and branch
 - What type of app this is
 - Why Vercel showed 404
 - What files/settings were changed
