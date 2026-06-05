@@ -36,9 +36,11 @@ If CLI setup is not available:
 2. Open the project.
 3. Go to SQL Editor.
 4. Paste and run the SQL from `supabase/migrations/20260602044307_dca38f60-8fb5-40f9-b7f5-647934c49ae4.sql`.
+5. Paste and run the SQL from `supabase/migrations/20260605093000_seed_questions.sql` to add starter questions.
 
 ## Important
 
 - Supabase anon/service keys cannot create tables through the app.
 - Creating tables requires SQL Editor, Supabase CLI, or a direct database connection.
 - After creating the table, add rows to `public.questions` or the quiz will have no questions.
+- The seed migration `supabase/migrations/20260605093000_seed_questions.sql` adds starter questions only when the table is empty.

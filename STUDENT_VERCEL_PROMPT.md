@@ -70,6 +70,8 @@ Tasks:
    - If the app reads tables from Supabase, verify those tables exist in the target Supabase project.
    - Search `supabase/migrations`, SQL files, Prisma/schema files, Drizzle files, or ORM config.
    - If Supabase errors with `Could not find the table ... in the schema cache`, explain that the SQL migration must be applied to Supabase.
+   - If the UI says the table exists but has no rows, add or document seed data for the required table.
+   - For quiz/list/data apps, check whether the app needs starter rows and create an idempotent seed migration if appropriate.
    - If Supabase CLI is available, automate migration with `supabase link` and `supabase db push`, or add clear scripts/docs for it.
    - If CLI cannot run because login/database password is missing, provide manual SQL Editor steps.
    - If a required table may be empty, make the UI handle the empty state gracefully.
