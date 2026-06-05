@@ -64,6 +64,20 @@ function Index() {
     }, 1000);
   };
 
+  if (questions.length === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-6 text-center text-foreground">
+        <div className="max-w-lg">
+          <h1 className="text-3xl font-black">Вопросы пока не добавлены</h1>
+          <p className="mt-3 text-muted-foreground">
+            Таблица Supabase найдена, но в ней нет строк. Добавьте вопросы в
+            таблицу <span className="font-mono text-foreground">public.questions</span>.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-background px-6 py-12 text-foreground">
 

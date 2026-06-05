@@ -7,6 +7,9 @@
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "db:push": "npx supabase db push --linked",
+    "db:push:dry": "npx supabase db push --linked --dry-run",
+    "db:link": "npx supabase link --project-ref nuvjafpspourscpacapw",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."

@@ -31,3 +31,9 @@ In Supabase, open Project Settings → API:
 - `VITE_*` variables are visible in the browser.
 - Do not add service role keys to Vercel unless server code truly needs admin privileges.
 - Add Vercel variables to Production, Preview, and Development unless the project needs different values per environment.
+
+## Database setup
+
+Environment variables only connect the app to Supabase. They do not create tables.
+
+If the app says a table is missing, run the project SQL migrations in Supabase using the CLI or SQL Editor.

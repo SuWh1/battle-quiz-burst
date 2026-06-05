@@ -66,9 +66,16 @@ Tasks:
    - If code only reads public data protected by SELECT/RLS policies, use the anon/public key instead of requiring service role.
    - Require `SUPABASE_SERVICE_ROLE_KEY` only for real backend admin actions that must bypass RLS.
    - Never put service-role keys in `VITE_*`, frontend code, or copy-paste files meant for public client variables.
-9. Run the local install/build/test steps needed to verify the fix.
-10. If build fails, fix the real cause instead of hiding errors.
-11. Commit and push the deployment fix to GitHub if changes are needed.
+9. Check database schema/migrations:
+   - If the app reads tables from Supabase, verify those tables exist in the target Supabase project.
+   - Search `supabase/migrations`, SQL files, Prisma/schema files, Drizzle files, or ORM config.
+   - If Supabase errors with `Could not find the table ... in the schema cache`, explain that the SQL migration must be applied to Supabase.
+   - If Supabase CLI is available, automate migration with `supabase link` and `supabase db push`, or add clear scripts/docs for it.
+   - If CLI cannot run because login/database password is missing, provide manual SQL Editor steps.
+   - If a required table may be empty, make the UI handle the empty state gracefully.
+10. Run the local install/build/test steps needed to verify the fix.
+11. If build fails, fix the real cause instead of hiding errors.
+12. Commit and push the deployment fix to GitHub if changes are needed.
 
 Important:
 - Never commit real `.env`.
@@ -79,6 +86,7 @@ Important:
 - Supabase anon/public keys may be used in frontend variables; Supabase service role keys must stay backend/server-only.
 - Do not require `SUPABASE_SERVICE_ROLE_KEY` unless the project actually needs backend admin privileges.
 - Remote font CSS imports can break Lightning CSS/Vite builds; prefer document/head font links when needed.
+- App database tables must exist in Supabase before Vercel/local runtime can query them.
 - Do not change unrelated app logic unless required for deployment.
 - Prefer minimal, correct Vercel config.
 
@@ -93,6 +101,7 @@ Final response should include:
 - For Supabase env vars: clearly say whether it needs the project URL, anon/public key, project ID, or service role secret key
 - Whether service role is actually required, and why
 - Any CSS/font import fixes made for Vite/Vercel
+- Whether database migrations were applied or what exact command/manual SQL step is needed
 - If `.env` exists: confirm `VERCEL_ENV_IMPORT.local.env` was created for Vercel import/paste and is ignored by git
 - If `.env` exists: confirm `VERCEL_ENV_VALUES.local.md` was created with instructions and is ignored by git
 - Exact Vercel settings to use

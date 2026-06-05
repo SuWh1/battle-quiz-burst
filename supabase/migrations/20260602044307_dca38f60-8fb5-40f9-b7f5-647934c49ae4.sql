@@ -1,5 +1,5 @@
 
-CREATE TABLE public.questions (
+CREATE TABLE IF NOT EXISTS public.questions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   question_text text NOT NULL,
   option_1 text NOT NULL,
@@ -15,6 +15,8 @@ GRANT SELECT ON public.questions TO anon, authenticated;
 GRANT ALL ON public.questions TO service_role;
 
 ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Questions are publicly readable" ON public.questions;
 
 CREATE POLICY "Questions are publicly readable"
   ON public.questions FOR SELECT
