@@ -17,8 +17,10 @@ The build creates `.vercel/output`, which Vercel uses through the Build Output A
 Add these in Vercel Project Settings → Environment Variables for Production, Preview, and Development:
 
 - `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
 - `SUPABASE_PUBLISHABLE_KEY`
 - `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 - `VITE_SUPABASE_PROJECT_ID`
 
@@ -27,9 +29,11 @@ Use the same values from the local `.env` file when adding these to Vercel. Do n
 For this project:
 
 - `SUPABASE_URL`: Supabase Project Settings → API → Project URL
-- `SUPABASE_PUBLISHABLE_KEY`: Supabase Project Settings → API → publishable/anon public key
+- `SUPABASE_ANON_KEY`: Supabase Project Settings → API → anon/public key
+- `SUPABASE_PUBLISHABLE_KEY`: same value as `SUPABASE_ANON_KEY` if the app uses this variable name
 - `VITE_SUPABASE_URL`: same value as `SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`: same value as `SUPABASE_PUBLISHABLE_KEY`
+- `VITE_SUPABASE_ANON_KEY`: same value as `SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: same value as `SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_PROJECT_ID`: the project reference from the Supabase URL, the part before `.supabase.co`
 
 `SUPABASE_SERVICE_ROLE_KEY` is only needed if server-only Supabase admin code is used. Do not add service-role keys to any `VITE_*` variable.

@@ -1,0 +1,30 @@
+# Student environment variable guide
+
+Use this guide when adding values to Vercel Project Settings → Environment Variables.
+
+## Supabase keys
+
+- `SUPABASE_URL`: the base Supabase project URL, like `https://your-project-ref.supabase.co`.
+- `SUPABASE_ANON_KEY`: the Supabase anon/public key. This is also sometimes called the publishable key.
+- `SUPABASE_PUBLISHABLE_KEY`: same value as `SUPABASE_ANON_KEY` if the project uses this name.
+- `VITE_SUPABASE_URL`: same value as `SUPABASE_URL`.
+- `VITE_SUPABASE_ANON_KEY`: same value as `SUPABASE_ANON_KEY`.
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: same value as `SUPABASE_ANON_KEY`.
+- `VITE_SUPABASE_PROJECT_ID`: the project ref from the URL, the part before `.supabase.co`.
+- `SUPABASE_SERVICE_ROLE_KEY`: secret server-only key. Add only if backend/server code needs it.
+
+## Where to find them
+
+In Supabase, open Project Settings → API:
+
+- Project URL → use for `SUPABASE_URL` and `VITE_SUPABASE_URL`.
+- Anon/public/publishable key → use for anon/public frontend variables.
+- Service role key → use only for `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Safety rules
+
+- Never commit `.env`.
+- Commit `.env.example` with names only.
+- Never put service role keys into `VITE_*` variables.
+- `VITE_*` variables are visible in the browser.
+- Add Vercel variables to Production, Preview, and Development unless the project needs different values per environment.
