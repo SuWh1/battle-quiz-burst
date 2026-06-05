@@ -36,6 +36,9 @@ Tasks:
    - Correct Output Directory
    - Correct framework preset
    - Add or fix vercel.json only if needed
+   - Check which package manager Vercel will use from lockfiles (`package-lock.json`, `bun.lock`, `pnpm-lock.yaml`, `yarn.lock`).
+   - If local works with npm but Vercel uses Bun/pnpm/yarn and deploys `404: NOT_FOUND`, add `vercel.json` with explicit `installCommand` and `buildCommand`.
+   - For Nitro/TanStack SSR apps, ensure the build creates `.vercel/output`; if Vercel logs show only `dist/`, fix build/package-manager settings.
 5. Fix routing:
    - For SPA apps, ensure page refreshes/deep links work.
    - For backend/server apps, ensure API/server routes are deployed correctly.

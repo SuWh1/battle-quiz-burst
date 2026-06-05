@@ -6,11 +6,13 @@ This project is a TanStack Start app with Nitro server output for Vercel.
 
 - Framework Preset: Other
 - Root Directory: repository root
-- Install Command: leave default, or use `bun install`
-- Build Command: `bun run build`
+- Install Command: `npm install`
+- Build Command: `npm run build`
 - Output Directory: leave empty
 
 The build creates `.vercel/output`, which Vercel uses through the Build Output API.
+
+This project includes `vercel.json` to force Vercel to use npm. Without it, Vercel may detect `bun.lock`, build a `dist/` output, and deploy a `404: NOT_FOUND` page.
 
 ## Required environment variables
 
