@@ -2,6 +2,8 @@
 
 Copy and paste this into Codex inside each student project.
 
+For a full beginner checklist before using this prompt, see `STUDENT_FULL_SETUP_STEPS.md`.
+
 ```text
 Please prepare this project for deployment on Vercel and fix the current 404: NOT_FOUND issue.
 
@@ -70,12 +72,15 @@ Tasks:
    - Require `SUPABASE_SERVICE_ROLE_KEY` only for real backend admin actions that must bypass RLS.
    - Never put service-role keys in `VITE_*`, frontend code, or copy-paste files meant for public client variables.
 9. Check database schema/migrations:
+   - Explain in simple student-friendly language that migrations are SQL files that create/update database tables.
+   - Explain how to find the Supabase project ref: it is the part of `https://PROJECT_REF.supabase.co` before `.supabase.co`.
    - If the app reads tables from Supabase, verify those tables exist in the target Supabase project.
    - Search `supabase/migrations`, SQL files, Prisma/schema files, Drizzle files, or ORM config.
    - If Supabase errors with `Could not find the table ... in the schema cache`, explain that the SQL migration must be applied to Supabase.
    - If the UI says the table exists but has no rows, add or document seed data for the required table.
    - For quiz/list/data apps, check whether the app needs starter rows and create an idempotent seed migration if appropriate.
    - If Supabase CLI is available, automate migration with `supabase link` and `supabase db push`, or add clear scripts/docs for it.
+   - When giving `supabase link`, substitute the real project ref if it can be found from `.env`; otherwise show exactly where the student should paste it.
    - If CLI cannot run because login/database password is missing, provide manual SQL Editor steps.
    - If a required table may be empty, make the UI handle the empty state gracefully.
 10. Run the local install/build/test steps needed to verify the fix.
