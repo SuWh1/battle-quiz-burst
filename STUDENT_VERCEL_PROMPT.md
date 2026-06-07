@@ -73,6 +73,7 @@ Tasks:
    - Search for `SUPABASE_SERVICE_ROLE_KEY`, `service_role`, `supabaseAdmin`, and server Supabase clients.
    - If code only reads public data protected by SELECT/RLS policies, use the anon/public key instead of requiring service role.
    - Require `SUPABASE_SERVICE_ROLE_KEY` only for real backend admin actions that must bypass RLS.
+   - If AI-generated or user-created data must be saved from a server function, treat that as backend admin usage and require `SUPABASE_SERVICE_ROLE_KEY`.
    - Never put service-role keys in `VITE_*`, frontend code, or copy-paste files meant for public client variables.
 9. Check database schema/migrations:
    - Explain in simple student-friendly language that migrations are SQL files that create/update database tables.

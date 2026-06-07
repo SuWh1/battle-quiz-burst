@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 import { generateQuizQuestions } from "@/lib/ai-quiz.functions";
 import { getQuestions } from "@/lib/questions.functions";
@@ -32,6 +32,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const queryClient = useQueryClient();
   const { data: questions } = useSuspenseQuery(questionsQueryOptions);
 
   const [screen, setScreen] = useState<"start" | "quiz" | "end">("start");
@@ -68,6 +69,10 @@ function Index() {
       const generatedQuestions = await generateQuizQuestions({
         data: { topic, count: 5 },
       });
+      queryClient.setQueryData<Awaited<ReturnType<typeof getQuestions>>>(
+        questionsQueryOptions.queryKey,
+        (existingQuestions = []) => [...existingQuestions, ...generatedQuestions],
+      );
       setActiveQuestions(generatedQuestions);
       setCurrent(0);
       setScore(0);

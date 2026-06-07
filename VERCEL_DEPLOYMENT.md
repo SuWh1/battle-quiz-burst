@@ -44,6 +44,8 @@ For this project:
 
 `SUPABASE_SERVICE_ROLE_KEY` is only needed if server-only Supabase admin code is used. Do not add service-role keys to any `VITE_*` variable.
 
+This app saves AI-generated quiz questions into Supabase from a server function, so add `SUPABASE_SERVICE_ROLE_KEY` in Vercel as a server-only environment variable.
+
 ## Common 404 cause
 
 If Vercel deploys this as a plain static Vite app, it may serve the wrong output and show `404: NOT_FOUND`. The Nitro preset must stay set to `vercel` in `vite.config.ts`, and Vercel should use the `.vercel/output` directory produced by the build.

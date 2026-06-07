@@ -17,6 +17,8 @@ Use this guide when adding values to Vercel Project Settings → Environment Var
 
 Most student apps do not need `SUPABASE_SERVICE_ROLE_KEY`. If the app only reads public data or uses normal user auth/RLS, use the anon/public key.
 
+This quiz app saves AI-generated questions from server code, so it does need `SUPABASE_SERVICE_ROLE_KEY` in local `.env` and Vercel.
+
 ## Where to find them
 
 In Supabase, open Project Settings → API:

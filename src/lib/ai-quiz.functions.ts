@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { QuizQuestion } from "@/lib/questions.functions";
 
 const generatedQuizSchema = z.object({
@@ -80,6 +81,35 @@ export const generateQuizQuestions = createServerFn({ method: "POST" })
     }
 
     const parsed = generatedQuizSchema.parse(JSON.parse(text));
+    const generatedQuestions = parsed.questions;
 
-    return parsed.questions;
+    const { data: lastQuestion, error: orderError } = await supabaseAdmin
+      .from("questions")
+      .select("order_index")
+      .order("order_index", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (orderError) {
+      throw new Error(`Could not prepare question save: ${orderError.message}`);
+    }
+
+    const startOrder = (lastQuestion?.order_index ?? 0) + 1;
+    const rows = generatedQuestions.map((question, index) => ({
+      question_text: question.q,
+      option_1: question.options[0],
+      option_2: question.options[1],
+      option_3: question.options[2],
+      option_4: question.options[3],
+      correct_index: question.correct,
+      order_index: startOrder + index,
+    }));
+
+    const { error: insertError } = await supabaseAdmin.from("questions").insert(rows);
+
+    if (insertError) {
+      throw new Error(`Generated quiz was created but could not be saved: ${insertError.message}`);
+    }
+
+    return generatedQuestions;
   });
