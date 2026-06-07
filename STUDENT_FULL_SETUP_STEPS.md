@@ -108,6 +108,8 @@ VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_ANON_PUBLIC_KEY
 VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_ANON_PUBLIC_KEY
 VITE_SUPABASE_PROJECT_ID=YOUR_PROJECT_REF
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 `YOUR_PROJECT_REF` means the short Supabase project ID from the URL.
@@ -126,6 +128,7 @@ Important:
 - Do not use `/rest/v1` in `SUPABASE_URL`.
 - Do not commit `.env`.
 - Do not put service role keys in `VITE_*`.
+- Do not put Gemini API keys in `VITE_*`.
 - Only use `SUPABASE_SERVICE_ROLE_KEY` if backend/server admin code really needs it.
 
 ## 7. Run locally
@@ -250,15 +253,18 @@ git push
 5. Choose the detected framework, or use the framework Codex recommends.
 6. Open Environment Variables.
 7. Add all variables from `.env`, but do not include quotes.
+8. Make sure AI keys like `GEMINI_API_KEY` are added as normal server variables, not `VITE_*`.
 
 Example:
 
 ```env
 SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_PROJECT_ID=YOUR_PROJECT_REF
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
-8. Click Deploy.
+9. Click Deploy.
 
 ## 12. If Vercel shows `404: NOT_FOUND`
 

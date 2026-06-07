@@ -25,6 +25,8 @@ Add these in Vercel Project Settings → Environment Variables for Production, P
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 - `VITE_SUPABASE_PROJECT_ID`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 
 Use the same values from the local `.env` file when adding these to Vercel. Do not commit those real values to GitHub.
 
@@ -37,6 +39,8 @@ For this project:
 - `VITE_SUPABASE_ANON_KEY`: same value as `SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`: same value as `SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_PROJECT_ID`: the project reference from the Supabase URL, the part before `.supabase.co`
+- `GEMINI_API_KEY`: Google AI Studio → API key
+- `GEMINI_MODEL`: use `gemini-2.5-flash-lite` unless you need a different Gemini model
 
 `SUPABASE_SERVICE_ROLE_KEY` is only needed if server-only Supabase admin code is used. Do not add service-role keys to any `VITE_*` variable.
 
