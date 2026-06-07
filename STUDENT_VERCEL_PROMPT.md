@@ -23,15 +23,20 @@ Tasks:
    - Check whether there are multiple local clones of the same GitHub repo.
    - If the open editor folder and the git repo folder are different, stop and explain the mismatch before editing files.
    - Do not make changes in a duplicate/old clone unless the student confirms it is the correct project folder.
-2. Inspect the project structure, package.json, framework config, routes, API/server files, and any existing vercel.json.
-3. Determine the app type:
+2. Create or update persistent project rules:
+   - Create or update `AGENTS.md` in the project root so future Codex runs remember the deployment rules.
+   - Include rules for `.env` safety, Vercel build settings, Supabase URL/project ref, migrations, Gemini model/key handling, and service-role safety.
+   - Add a short “Before deploy” checklist to `AGENTS.md`.
+   - Do not put real secrets in `AGENTS.md`.
+3. Inspect the project structure, package.json, framework config, routes, API/server files, and any existing vercel.json.
+4. Determine the app type:
    - Static frontend app
    - Vite/React SPA
    - Next.js app
    - TanStack Start / Nitro SSR app
    - Express/custom backend
    - Full-stack app with separate frontend/backend
-4. Fix the Vercel deployment setup:
+5. Fix the Vercel deployment setup:
    - Correct Root Directory
    - Correct Install Command
    - Correct Build Command
@@ -41,10 +46,10 @@ Tasks:
    - Check which package manager Vercel will use from lockfiles (`package-lock.json`, `bun.lock`, `pnpm-lock.yaml`, `yarn.lock`).
    - If local works with npm but Vercel uses Bun/pnpm/yarn and deploys `404: NOT_FOUND`, add `vercel.json` with explicit `installCommand` and `buildCommand`.
    - For Nitro/TanStack SSR apps, ensure the build creates `.vercel/output`; if Vercel logs show only `dist/`, fix build/package-manager settings.
-5. Fix routing:
+6. Fix routing:
    - For SPA apps, ensure page refreshes/deep links work.
    - For backend/server apps, ensure API/server routes are deployed correctly.
-6. Check environment variables:
+7. Check environment variables:
    - Find all required env vars in the code.
    - Compare required env vars with `.env`, `.env.local`, `.env.example`, README, and deployment docs if present.
    - Add `.env` and `.env.*` to `.gitignore`.
@@ -65,17 +70,17 @@ Tasks:
    - Also create `VERCEL_ENV_VALUES.local.md` with short instructions for which Vercel environments to add them to: Production, Preview, and Development, and with human-friendly labels like “Supabase anon/public key” and “Supabase service role secret key.”
    - Make sure `VERCEL_ENV_IMPORT.local.env` and `VERCEL_ENV_VALUES.local.md` are ignored by git and never committed.
    - Do not print real secret values in the chat/final response; only put them in the local ignored files.
-7. Check for common Vite/Vercel build issues:
+8. Check for common Vite/Vercel build issues:
    - If CSS has remote `@import url("https://...")` font imports, make sure the build accepts it.
    - If Lightning CSS errors with `@import rules must precede all rules`, move imports to the top or move external font links into the HTML/document head.
    - Do not hide the error by disabling the Vite overlay; fix the CSS/import order.
-8. Check Supabase service-role usage:
+9. Check Supabase service-role usage:
    - Search for `SUPABASE_SERVICE_ROLE_KEY`, `service_role`, `supabaseAdmin`, and server Supabase clients.
    - If code only reads public data protected by SELECT/RLS policies, use the anon/public key instead of requiring service role.
    - Require `SUPABASE_SERVICE_ROLE_KEY` only for real backend admin actions that must bypass RLS.
    - If AI-generated or user-created data must be saved from a server function, treat that as backend admin usage and require `SUPABASE_SERVICE_ROLE_KEY`.
    - Never put service-role keys in `VITE_*`, frontend code, or copy-paste files meant for public client variables.
-9. Check database schema/migrations:
+10. Check database schema/migrations:
    - Explain in simple student-friendly language that migrations are SQL files that create/update database tables.
    - Explain how to find the Supabase project ref: it is the part of `https://PROJECT_REF.supabase.co` before `.supabase.co`.
    - If the app reads tables from Supabase, verify those tables exist in the target Supabase project.
@@ -87,9 +92,13 @@ Tasks:
    - When giving `supabase link`, substitute the real project ref if it can be found from `.env`; otherwise show exactly where the student should paste it.
    - If CLI cannot run because login/database password is missing, provide manual SQL Editor steps.
    - If a required table may be empty, make the UI handle the empty state gracefully.
-10. Run the local install/build/test steps needed to verify the fix.
-11. If build fails, fix the real cause instead of hiding errors.
-12. Commit and push the deployment fix to GitHub if changes are needed.
+11. Add automatic/local checks where practical:
+   - Add package scripts only if useful and safe, for example `build`, `db:push:dry`, or deploy verification commands.
+   - Make sure `npm run build` or the project’s equivalent passes before finalizing.
+   - If a rule cannot be automated, write it in `AGENTS.md` and the final response.
+12. Run the local install/build/test steps needed to verify the fix.
+13. If build fails, fix the real cause instead of hiding errors.
+14. Commit and push the deployment fix to GitHub if changes are needed.
 
 Important:
 - Never commit real `.env`.
@@ -105,6 +114,7 @@ Important:
 - App database tables must exist in Supabase before Vercel/local runtime can query them.
 - Do not change unrelated app logic unless required for deployment.
 - Prefer minimal, correct Vercel config.
+- Preserve project rules in `AGENTS.md` so future Codex runs keep checking these deployment/env/database rules.
 
 Final response should include:
 - The exact local folder path that was changed
@@ -112,6 +122,7 @@ Final response should include:
 - What type of app this is
 - Why Vercel showed 404
 - What files/settings were changed
+- Whether `AGENTS.md` was created/updated with persistent project rules
 - Required Vercel environment variables
 - For each env var: what value should go there and where to find it, without revealing the actual secret value in chat
 - For Supabase env vars: clearly say whether it needs the project URL, anon/public key, project ID, or service role secret key
