@@ -52,6 +52,15 @@ function Index() {
     setScreen("quiz");
   };
 
+  const returnToMenu = () => {
+    setCurrent(0);
+    setScore(0);
+    setSelected(null);
+    setLocked(false);
+    setGenerationError(null);
+    setScreen("start");
+  };
+
   const generateTopicQuiz = async () => {
     setGenerationError(null);
     setIsGenerating(true);
@@ -159,17 +168,28 @@ function Index() {
 
       {screen === "quiz" && (
         <div className="flex w-full max-w-3xl flex-1 flex-col">
-          <div className="mt-4 text-center">
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={returnToMenu}
+              className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary"
+            >
+              ← Другая викторина
+            </button>
+            <div className="text-right">
             <div className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
               Вопрос {current + 1} из {activeQuestions.length}
             </div>
+              <div className="mt-2 text-sm text-muted-foreground">Счёт: <span className="font-medium text-foreground">{score}</span></div>
+            </div>
+          </div>
+          <div className="mt-4 text-center">
             <div className="mx-auto mt-3 h-2 w-full max-w-md overflow-hidden rounded-full bg-secondary ring-1 ring-border">
               <div
                 className="h-full rounded-full bg-primary transition-all duration-500"
                 style={{ width: `${((current + 1) / activeQuestions.length) * 100}%` }}
               />
             </div>
-            <div className="mt-2 text-sm text-muted-foreground">Счёт: <span className="font-medium text-foreground">{score}</span></div>
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8">
@@ -221,13 +241,22 @@ function Index() {
               {score} / {activeQuestions.length}
             </span>
           </p>
-          <button
-            type="button"
-            onClick={startGame}
-            className="mt-10 rounded-md bg-primary px-10 py-4 text-base font-medium text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
-          >
-            Играть ещё
-          </button>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={startGame}
+              className="rounded-md bg-primary px-10 py-4 text-base font-medium text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
+            >
+              Играть ещё
+            </button>
+            <button
+              type="button"
+              onClick={returnToMenu}
+              className="rounded-md border border-border bg-card px-10 py-4 text-base font-medium text-card-foreground shadow-sm transition-colors duration-150 hover:bg-secondary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
+            >
+              Выбрать другую тему
+            </button>
+          </div>
         </div>
       )}
     </main>
