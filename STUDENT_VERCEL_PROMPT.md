@@ -60,7 +60,7 @@ Tasks:
      - `SUPABASE_SERVICE_ROLE_KEY`: secret backend/server-only key, never `VITE_*`.
    - For AI API keys, label keys clearly:
      - `GEMINI_API_KEY`: secret backend/server-only key, never `VITE_*`.
-     - `GEMINI_MODEL`: safe model name, for example `gemini-2.5-flash-lite`.
+     - `GEMINI_MODEL`: always use `gemini-2.5-flash-lite` by default for student projects, unless the user explicitly asks for another model.
    - If `.env` exists locally, create `VERCEL_ENV_IMPORT.local.env` using the actual local `.env` values, formatted as `KEY=VALUE` lines so the student can paste/import it into Vercel Environment Variables.
    - Also create `VERCEL_ENV_VALUES.local.md` with short instructions for which Vercel environments to add them to: Production, Preview, and Development, and with human-friendly labels like “Supabase anon/public key” and “Supabase service role secret key.”
    - Make sure `VERCEL_ENV_IMPORT.local.env` and `VERCEL_ENV_VALUES.local.md` are ignored by git and never committed.
@@ -98,6 +98,7 @@ Important:
 - Public frontend variables such as `VITE_*`, `NEXT_PUBLIC_*`, or similar are visible in the browser, so never put private secrets there.
 - Supabase anon/public keys may be used in frontend variables; Supabase service role keys must stay backend/server-only.
 - Gemini API keys must stay backend/server-only and must not use `VITE_*`.
+- For Gemini features, default to `gemini-2.5-flash-lite` because it is the best fit for free/low-cost student usage.
 - Do not require `SUPABASE_SERVICE_ROLE_KEY` unless the project actually needs backend admin privileges.
 - Remote font CSS imports can break Lightning CSS/Vite builds; prefer document/head font links when needed.
 - App database tables must exist in Supabase before Vercel/local runtime can query them.
