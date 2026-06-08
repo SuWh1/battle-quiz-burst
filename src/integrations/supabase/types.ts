@@ -25,6 +25,8 @@ export type Database = {
           option_4: string
           order_index: number
           question_text: string
+          quiz_id: string
+          quiz_title: string
         }
         Insert: {
           correct_index: number
@@ -36,6 +38,8 @@ export type Database = {
           option_4: string
           order_index?: number
           question_text: string
+          quiz_id?: string
+          quiz_title?: string
         }
         Update: {
           correct_index?: number
@@ -47,6 +51,8 @@ export type Database = {
           option_4?: string
           order_index?: number
           question_text?: string
+          quiz_id?: string
+          quiz_title?: string
         }
         Relationships: []
       }

@@ -3,11 +3,11 @@ import { useState } from "react";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 import { generateQuizQuestions } from "@/lib/ai-quiz.functions";
-import { getQuestions } from "@/lib/questions.functions";
+import { getQuizzes, type SavedQuiz } from "@/lib/questions.functions";
 
-const questionsQueryOptions = queryOptions({
-  queryKey: ["questions"],
-  queryFn: () => getQuestions(),
+const quizzesQueryOptions = queryOptions({
+  queryKey: ["quizzes"],
+  queryFn: () => getQuizzes(),
 });
 
 export const Route = createFileRoute("/")({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Яркая игра-викторина в стиле игрового шоу." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(questionsQueryOptions),
+  loader: ({ context }) => context.queryClient.ensureQueryData(quizzesQueryOptions),
   errorComponent: ({ error }) => (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 text-center text-foreground">
       <div>
@@ -33,10 +33,11 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const queryClient = useQueryClient();
-  const { data: questions } = useSuspenseQuery(questionsQueryOptions);
+  const { data: quizzes } = useSuspenseQuery(quizzesQueryOptions);
 
-  const [screen, setScreen] = useState<"start" | "quiz" | "end">("start");
-  const [activeQuestions, setActiveQuestions] = useState(questions);
+  const [screen, setScreen] = useState<"start" | "library" | "quiz" | "end">("start");
+  const [activeQuizTitle, setActiveQuizTitle] = useState("");
+  const [activeQuestions, setActiveQuestions] = useState<SavedQuiz["questions"]>([]);
   const [topic, setTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -66,14 +67,15 @@ function Index() {
     setGenerationError(null);
     setIsGenerating(true);
     try {
-      const generatedQuestions = await generateQuizQuestions({
+      const generatedQuiz = await generateQuizQuestions({
         data: { topic, count: 5 },
       });
-      queryClient.setQueryData<Awaited<ReturnType<typeof getQuestions>>>(
-        questionsQueryOptions.queryKey,
-        (existingQuestions = []) => [...existingQuestions, ...generatedQuestions],
+      queryClient.setQueryData<Awaited<ReturnType<typeof getQuizzes>>>(
+        quizzesQueryOptions.queryKey,
+        (existingQuizzes = []) => [generatedQuiz, ...existingQuizzes],
       );
-      setActiveQuestions(generatedQuestions);
+      setActiveQuizTitle(generatedQuiz.title);
+      setActiveQuestions(generatedQuiz.questions);
       setCurrent(0);
       setScore(0);
       setSelected(null);
@@ -86,12 +88,17 @@ function Index() {
     }
   };
 
-  const useDatabaseQuestions = () => {
-    if (questions.length === 0) {
+  const openQuizLibrary = () => {
+    if (quizzes.length === 0) {
       setGenerationError("В базе пока нет вопросов. Создайте викторину через AI или добавьте вопросы в Supabase.");
       return;
     }
-    setActiveQuestions(questions);
+    setScreen("library");
+  };
+
+  const playSavedQuiz = (quiz: SavedQuiz) => {
+    setActiveQuizTitle(quiz.title);
+    setActiveQuestions(quiz.questions);
     startGame();
   };
 
@@ -154,13 +161,13 @@ function Index() {
             </div>
             <button
               type="button"
-              onClick={useDatabaseQuestions}
-              disabled={questions.length === 0}
+              onClick={openQuizLibrary}
+              disabled={quizzes.length === 0}
               className="rounded-md bg-primary px-12 py-5 text-base font-medium tracking-wide text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring sm:px-16 sm:py-6 sm:text-lg"
             >
               Играть с вопросами из базы
             </button>
-            {questions.length === 0 && (
+            {quizzes.length === 0 && (
               <p className="max-w-md text-center text-sm text-muted-foreground">
                 В базе пока нет вопросов. AI-викторина всё равно может работать.
               </p>
@@ -169,6 +176,49 @@ function Index() {
 
           <footer className="text-sm text-muted-foreground">© Quiz Battle</footer>
         </>
+      )}
+
+      {screen === "library" && (
+        <div className="flex w-full max-w-4xl flex-1 flex-col">
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={returnToMenu}
+              className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary"
+            >
+              ← Назад
+            </button>
+            <div className="text-right">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-foreground">
+                Все викторины
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Выбери тему, чтобы начать игру
+              </p>
+            </div>
+          </div>
+
+          <div className="grid flex-1 content-center gap-4 py-8 sm:grid-cols-2">
+            {quizzes.map((quiz) => (
+              <button
+                key={quiz.id}
+                type="button"
+                onClick={() => playSavedQuiz(quiz)}
+                className="rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-secondary"
+              >
+                <div className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  {quiz.questions.length} вопросов
+                </div>
+                <h3 className="mt-3 font-display text-2xl font-normal text-card-foreground">
+                  {quiz.title}
+                </h3>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Нажми, чтобы играть эту викторину.
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {screen === "quiz" && (
@@ -182,9 +232,12 @@ function Index() {
               ← Другая викторина
             </button>
             <div className="text-right">
-            <div className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              Вопрос {current + 1} из {activeQuestions.length}
-            </div>
+              <div className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                {activeQuizTitle}
+              </div>
+              <div className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                Вопрос {current + 1} из {activeQuestions.length}
+              </div>
               <div className="mt-2 text-sm text-muted-foreground">Счёт: <span className="font-medium text-foreground">{score}</span></div>
             </div>
           </div>

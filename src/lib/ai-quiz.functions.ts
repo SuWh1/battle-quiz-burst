@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { QuizQuestion } from "@/lib/questions.functions";
+import type { QuizQuestion, SavedQuiz } from "@/lib/questions.functions";
 
 const generatedQuizSchema = z.object({
   questions: z
@@ -29,7 +29,7 @@ export const generateQuizQuestions = createServerFn({ method: "POST" })
       count: z.number().int().min(3).max(10).default(5),
     }),
   )
-  .handler(async ({ data }): Promise<QuizQuestion[]> => {
+  .handler(async ({ data }): Promise<SavedQuiz> => {
     const apiKey = process.env.GEMINI_API_KEY;
     const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
 
@@ -95,7 +95,11 @@ export const generateQuizQuestions = createServerFn({ method: "POST" })
     }
 
     const startOrder = (lastQuestion?.order_index ?? 0) + 1;
+    const quizId = crypto.randomUUID();
+    const title = data.topic.trim();
     const rows = generatedQuestions.map((question, index) => ({
+      quiz_id: quizId,
+      quiz_title: title,
       question_text: question.q,
       option_1: question.options[0],
       option_2: question.options[1],
@@ -111,5 +115,10 @@ export const generateQuizQuestions = createServerFn({ method: "POST" })
       throw new Error(`Generated quiz was created but could not be saved: ${insertError.message}`);
     }
 
-    return generatedQuestions;
+    return {
+      id: quizId,
+      title,
+      createdAt: new Date().toISOString(),
+      questions: generatedQuestions,
+    };
   });
