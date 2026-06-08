@@ -286,12 +286,22 @@ Then ask Codex to inspect:
 
 For TanStack Start / Nitro apps, Vercel should build `.vercel/output`. If Vercel logs show only `dist/`, the deployment config is wrong.
 
-## 13. Paste this into Codex if stuck
+## 13. Paste the master prompt into Codex
 
-Use the prompt in:
+After opening the project in VS Code, paste the master prompt from:
 
 ```text
 STUDENT_VERCEL_PROMPT.md
 ```
 
-It asks Codex to check the repo, env vars, database, build output, and Vercel setup.
+That prompt tells Codex to verify everything automatically:
+
+- correct local repo
+- `.env` safety
+- Vercel settings
+- Supabase env variables
+- Supabase migrations
+- local build
+- safe commit and push
+
+If Supabase migrations can be run automatically, Codex will run them. If login or database password is missing, Codex will explain exactly what the student must do.
