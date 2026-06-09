@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 import { generateQuizQuestions } from "@/lib/ai-quiz.functions";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 import { getQuizzes, type SavedQuiz } from "@/lib/questions.functions";
 
 const quizzesQueryOptions = queryOptions({
@@ -45,6 +47,34 @@ function Index() {
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [locked, setLocked] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (isMounted) setSession(data.session);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession) {
+        setAuthError(null);
+        setAuthMessage(null);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const resetRound = () => {
     setCurrent(0);
@@ -56,6 +86,66 @@ function Index() {
   const startGame = () => {
     resetRound();
     setScreen("quiz");
+  };
+
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    setAuthMessage(null);
+    setIsAuthLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+      },
+    });
+    if (error) {
+      setAuthError(error.message);
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleEmailAuth = async () => {
+    setAuthError(null);
+    setAuthMessage(null);
+
+    if (!authEmail.trim() || authPassword.length < 6) {
+      setAuthError("Введите email и пароль минимум из 6 символов.");
+      return;
+    }
+
+    setIsAuthLoading(true);
+    const credentials = {
+      email: authEmail.trim(),
+      password: authPassword,
+    };
+
+    const { data, error } = authMode === "register"
+      ? await supabase.auth.signUp(credentials)
+      : await supabase.auth.signInWithPassword(credentials);
+
+    setIsAuthLoading(false);
+
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+
+    if (authMode === "register" && !data.session) {
+      setAuthMessage("Аккаунт создан. Если Supabase просит подтверждение email, отключите Confirm email в Auth settings.");
+      return;
+    }
+
+    setAuthMessage(authMode === "register" ? "Аккаунт создан, вы вошли." : "Вы вошли.");
+    setAuthPassword("");
+  };
+
+  const handleSignOut = async () => {
+    setAuthError(null);
+    setAuthMessage(null);
+    setIsAuthLoading(true);
+    const { error } = await supabase.auth.signOut();
+    setIsAuthLoading(false);
+    if (error) setAuthError(error.message);
   };
 
   const returnToMenu = () => {
@@ -141,6 +231,99 @@ function Index() {
           </header>
 
           <div className="flex flex-1 flex-col items-center justify-center gap-4">
+            <section className="w-full max-w-xl rounded-2xl border border-border bg-card p-5 shadow-sm">
+              {session ? (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-card-foreground">
+                      Вы вошли
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {session.user.email ?? "Google аккаунт"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isAuthLoading}
+                    onClick={handleSignOut}
+                    className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Выйти
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-sm font-medium text-card-foreground">
+                        Вход и регистрация
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Войдите через Google или создайте аккаунт по email.
+                      </p>
+                    </div>
+                    <div className="flex rounded-md border border-border bg-background p-1">
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("login")}
+                        className={`rounded px-3 py-1 text-xs font-medium transition-colors ${authMode === "login" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        Вход
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("register")}
+                        className={`rounded px-3 py-1 text-xs font-medium transition-colors ${authMode === "register" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        Регистрация
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isAuthLoading}
+                    onClick={handleGoogleSignIn}
+                    className="mt-4 w-full rounded-md border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Продолжить с Google
+                  </button>
+
+                  <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                    <input
+                      type="email"
+                      value={authEmail}
+                      onChange={(event) => setAuthEmail(event.target.value)}
+                      placeholder="Email"
+                      className="min-h-11 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+                    />
+                    <input
+                      type="password"
+                      value={authPassword}
+                      onChange={(event) => setAuthPassword(event.target.value)}
+                      placeholder="Пароль"
+                      className="min-h-11 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+                    />
+                    <button
+                      type="button"
+                      disabled={isAuthLoading}
+                      onClick={handleEmailAuth}
+                      className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {authMode === "register" ? "Создать" : "Войти"}
+                    </button>
+                  </div>
+
+                  {authError && (
+                    <p className="mt-3 text-sm text-destructive">{authError}</p>
+                  )}
+                  {authMessage && (
+                    <p className="mt-3 text-sm text-muted-foreground">{authMessage}</p>
+                  )}
+                </div>
+              )}
+            </section>
+
             <div className="w-full max-w-xl rounded-2xl border border-border bg-card p-5 shadow-sm">
               <label htmlFor="topic" className="text-sm font-medium text-card-foreground">
                 Создать викторину с AI
@@ -190,7 +373,7 @@ function Index() {
           <div className="mt-4 flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={returnToLibrary}
+              onClick={returnToMenu}
               className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary"
             >
               ← Назад
@@ -233,7 +416,7 @@ function Index() {
           <div className="mt-4 flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={returnToMenu}
+              onClick={returnToLibrary}
               className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary"
             >
               ← Другая викторина
