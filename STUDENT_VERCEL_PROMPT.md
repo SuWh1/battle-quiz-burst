@@ -152,7 +152,40 @@ Vercel env handoff:
 - Do not print real values in chat/final response.
 - In final response, list variable names and where students find values, but not actual secret values.
 
-Step 7 — Check Supabase service-role usage:
+Step 7 — Настрой простую регистрацию без подтверждения email:
+Если проект использует Supabase Auth и нужна обычная регистрация по email/password без письма подтверждения:
+1. Проверь, есть ли в приложении регистрация через `supabase.auth.signUp`.
+2. Если формы регистрации нет, добавь простую форму:
+   - email
+   - password
+   - кнопка “Зарегистрироваться”
+   - кнопка “Войти”
+   - кнопка “Войти через Google”, если нужен Google OAuth
+   - кнопка “Выйти”, если пользователь уже вошёл
+3. Для Google OAuth используй `supabase.auth.signInWithOAuth({ provider: "google" })`.
+4. Для обычной регистрации используй `supabase.auth.signUp({ email, password })`.
+5. Для входа используй `supabase.auth.signInWithPassword({ email, password })`.
+6. Для выхода используй `supabase.auth.signOut()`.
+7. Не добавляй свою систему паролей и не сохраняй пароли в базу вручную. Supabase Auth делает это сам.
+8. Email confirmation нельзя полностью отключить кодом приложения. Это настройка Supabase Dashboard.
+9. Напиши студенту точные шаги:
+   - Open Supabase Dashboard.
+   - Go to Authentication → Providers → Email.
+   - Turn OFF `Confirm email`.
+   - Save.
+10. После этого новые пользователи смогут регистрироваться и сразу входить без письма подтверждения.
+11. Если Google login нужен, также напиши шаги:
+   - Authentication → Providers → Google.
+   - Enable Google.
+   - Add Google Client ID.
+   - Add Google Client Secret.
+   - In Google Cloud Console, add Supabase callback URL as authorized redirect URI.
+12. В Supabase Authentication → URL Configuration добавь:
+   - local dev URL, for example `http://localhost:5173` or the actual dev URL
+   - Vercel production URL
+   - Vercel preview URL pattern if needed
+
+Step 8 — Check Supabase service-role usage:
 Search for:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `service_role`
@@ -164,7 +197,7 @@ Decide:
 - If the app writes AI-generated/user-generated data from a server function, performs admin actions, or bypasses RLS, require `SUPABASE_SERVICE_ROLE_KEY`.
 - Never put service role in frontend code or `VITE_*`.
 
-Step 8 — Check and run Supabase migrations automatically:
+Step 9 — Check and run Supabase migrations automatically:
 Explain simply:
 - A migration is a SQL file that creates or updates database tables.
 - The app can fail even if the code is correct when migrations are not applied.
@@ -206,14 +239,14 @@ After migrations:
 - Verify the old missing-table/missing-column error is gone.
 - If table exists but has no rows, add seed migration or document exactly what data must be inserted.
 
-Step 9 — Check common Vite/Vercel build issues:
+Step 10 — Check common Vite/Vercel build issues:
 - If CSS has remote `@import url("https://...")` font imports and Lightning CSS fails with:
   `@import rules must precede all rules`
   move imports to the top or move external font links into HTML/document head.
 - Do not disable the Vite overlay to hide errors.
 - Fix the actual CSS/import order.
 
-Step 10 — Run verification commands:
+Step 11 — Run verification commands:
 Run the correct commands for this project, usually:
 - install command, for example `npm install`
 - build command, for example `npm run build`
@@ -225,7 +258,7 @@ If build fails:
 - Re-run build.
 - Do not hide errors.
 
-Step 11 — Commit and push safe changes:
+Step 12 — Commit and push safe changes:
 Before committing:
 1. Run `git status`.
 2. Confirm `.env` and local secret handoff files are not staged.
@@ -237,7 +270,7 @@ Then:
 
 Do not commit if secrets are staged.
 
-Step 12 — Final response format:
+Step 13 — Final response format:
 In the final response, include:
 - exact local folder path changed
 - GitHub remote URL and branch
@@ -249,6 +282,9 @@ In the final response, include:
 - for each env var: what value type goes there and where to find it, without revealing actual values
 - for Supabase vars: say project URL, anon/public key, project ID, or service-role secret key
 - whether service role is required and why
+- whether basic email/password registration was added
+- whether Google login was added
+- whether Supabase `Confirm email` must be turned off manually and exact dashboard path
 - whether Supabase migrations were applied automatically
 - if migrations were not applied, exact command/manual SQL steps needed
 - whether seed data is needed

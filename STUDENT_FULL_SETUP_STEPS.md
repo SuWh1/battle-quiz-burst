@@ -155,7 +155,47 @@ npm run build
 
 If build fails, fix the real error before deploying.
 
-## 9. Set up Supabase database
+## 9. Set up Supabase Auth registration
+
+If the app has registration/login and you want plain registration without email confirmation:
+
+1. Open Supabase dashboard.
+2. Open your project.
+3. Go to Authentication → Providers → Email.
+4. Turn OFF:
+
+```text
+Confirm email
+```
+
+5. Click Save.
+
+Now new users can register with email/password and use the app without opening a confirmation email.
+
+For Google login:
+
+1. Go to Authentication → Providers → Google.
+2. Enable Google.
+3. Add Google Client ID.
+4. Add Google Client Secret.
+5. Copy the Supabase callback URL from that page.
+6. Add that callback URL in Google Cloud Console as an authorized redirect URI.
+7. Click Save in Supabase.
+
+Also check Authentication → URL Configuration:
+
+- Site URL: your Vercel production URL.
+- Redirect URLs: add your local URL and Vercel URL.
+
+Examples:
+
+```text
+http://localhost:5173
+http://localhost:8080
+https://your-project.vercel.app
+```
+
+## 10. Set up Supabase database
 
 Some apps need database tables before they work. A migration is just a saved SQL file that creates or updates database tables.
 
@@ -207,7 +247,7 @@ Common database messages:
 - `Could not find the table ...`: the table migration was not applied yet.
 - `table exists but has no rows`: the table exists, but you need seed data or manually add rows.
 
-## 10. Commit and push code
+## 11. Commit and push code
 
 Check changes:
 
@@ -239,7 +279,7 @@ Push:
 git push
 ```
 
-## 11. Deploy on Vercel
+## 12. Deploy on Vercel
 
 1. Open https://vercel.com/new
 2. Import the GitHub repo.
@@ -266,7 +306,7 @@ GEMINI_MODEL=gemini-2.5-flash-lite
 
 9. Click Deploy.
 
-## 12. If Vercel shows `404: NOT_FOUND`
+## 13. If Vercel shows `404: NOT_FOUND`
 
 Check these:
 
@@ -286,7 +326,7 @@ Then ask Codex to inspect:
 
 For TanStack Start / Nitro apps, Vercel should build `.vercel/output`. If Vercel logs show only `dist/`, the deployment config is wrong.
 
-## 13. Paste the master prompt into Codex
+## 14. Paste the master prompt into Codex
 
 After opening the project in VS Code, paste the master prompt from:
 
