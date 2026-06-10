@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 import { generateQuizQuestions } from "@/lib/ai-quiz.functions";
+import { getFeedback, submitFeedback, type Feedback } from "@/lib/feedback.functions";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { getQuizzes, type SavedQuiz } from "@/lib/questions.functions";
@@ -37,7 +38,7 @@ function Index() {
   const queryClient = useQueryClient();
   const { data: quizzes } = useSuspenseQuery(quizzesQueryOptions);
 
-  const [screen, setScreen] = useState<"start" | "library" | "quiz" | "end">("start");
+  const [screen, setScreen] = useState<"start" | "library" | "quiz" | "end" | "feedback" | "reviews">("start");
   const [activeQuizTitle, setActiveQuizTitle] = useState("");
   const [activeQuestions, setActiveQuestions] = useState<SavedQuiz["questions"]>([]);
   const [topic, setTopic] = useState("");
@@ -54,6 +55,16 @@ function Index() {
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [isFeedbackSending, setIsFeedbackSending] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [reviews, setReviews] = useState<Feedback[]>([]);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [isReviewsLoading, setIsReviewsLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -160,6 +171,75 @@ function Index() {
     setScreen(quizzes.length > 0 ? "library" : "start");
   };
 
+  const copyGameLink = async () => {
+    const link = typeof window !== "undefined" ? window.location.origin : "";
+
+    try {
+      if (navigator.clipboard && link) {
+        await navigator.clipboard.writeText(link);
+      } else if (typeof document !== "undefined") {
+        const input = document.createElement("input");
+        input.value = link;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+
+      setShareMessage("Ссылка скопирована!");
+      window.setTimeout(() => setShareMessage(null), 2200);
+    } catch {
+      setShareMessage("Не удалось скопировать ссылку.");
+      window.setTimeout(() => setShareMessage(null), 2200);
+    }
+  };
+
+  const openFeedbackScreen = () => {
+    setFeedbackMessage(null);
+    setFeedbackError(null);
+    setShowConfetti(false);
+    setScreen("feedback");
+  };
+
+  const sendFeedback = async () => {
+    setFeedbackError(null);
+    setFeedbackMessage(null);
+    setIsFeedbackSending(true);
+
+    try {
+      const savedFeedback = await submitFeedback({
+        data: {
+          rating: feedbackRating,
+          improvement: feedbackText,
+        },
+      });
+      setReviews((existingReviews) => [savedFeedback, ...existingReviews]);
+      setFeedbackText("");
+      setFeedbackRating(5);
+      setFeedbackMessage("Спасибо за отзыв!");
+      setShowConfetti(true);
+      window.setTimeout(() => setShowConfetti(false), 2600);
+    } catch (error) {
+      setFeedbackError(error instanceof Error ? error.message : "Не удалось сохранить отзыв.");
+    } finally {
+      setIsFeedbackSending(false);
+    }
+  };
+
+  const openReviewsScreen = async () => {
+    setScreen("reviews");
+    setReviewsError(null);
+    setIsReviewsLoading(true);
+
+    try {
+      setReviews(await getFeedback());
+    } catch (error) {
+      setReviewsError(error instanceof Error ? error.message : "Не удалось загрузить отзывы.");
+    } finally {
+      setIsReviewsLoading(false);
+    }
+  };
+
   const generateTopicQuiz = async () => {
     setGenerationError(null);
     setIsGenerating(true);
@@ -242,14 +322,30 @@ function Index() {
                       {session.user.email ?? "Google аккаунт"}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={isAuthLoading}
-                    onClick={handleSignOut}
-                    className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Выйти
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={copyGameLink}
+                      className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      Поделиться
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openReviewsScreen}
+                      className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      Отзывы
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isAuthLoading}
+                      onClick={handleSignOut}
+                      className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Выйти
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div>
@@ -356,6 +452,13 @@ function Index() {
               className="rounded-md bg-primary px-12 py-5 text-base font-medium tracking-wide text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring sm:px-16 sm:py-6 sm:text-lg"
             >
               Играть с вопросами из базы
+            </button>
+            <button
+              type="button"
+              onClick={openFeedbackScreen}
+              className="rounded-md border border-border bg-card px-8 py-3 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-secondary"
+            >
+              Оставить отзыв
             </button>
             {quizzes.length === 0 && (
               <p className="max-w-md text-center text-sm text-muted-foreground">
@@ -478,6 +581,126 @@ function Index() {
         </div>
       )}
 
+      {shareMessage && (
+        <div className="fixed left-1/2 top-6 z-20 -translate-x-1/2 rounded-full border border-border bg-card px-5 py-3 text-sm font-medium text-card-foreground shadow-lg">
+          {shareMessage}
+        </div>
+      )}
+
+      {showConfetti && (
+        <div className="pointer-events-none fixed inset-0 z-10 flex items-start justify-center overflow-hidden pt-8 text-4xl">
+          <div className="animate-bounce">🍬 🎉 🍭 ✨ 🍬 🎊</div>
+        </div>
+      )}
+
+      {screen === "feedback" && (
+        <div className="flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center">
+          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="font-display text-4xl font-normal tracking-tight text-card-foreground">
+              Оставить отзыв
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Оцени игру и напиши, что можно улучшить.
+            </p>
+
+            <div className="mt-6 flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setFeedbackRating(star)}
+                  className={`text-4xl transition-transform hover:scale-110 ${star <= feedbackRating ? "text-primary" : "text-muted-foreground/40"}`}
+                  aria-label={`${star} звезд`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={feedbackText}
+              onChange={(event) => setFeedbackText(event.target.value)}
+              placeholder="Что улучшить?"
+              className="mt-6 min-h-32 w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+            />
+
+            {feedbackError && (
+              <p className="mt-3 text-sm text-destructive">{feedbackError}</p>
+            )}
+            {feedbackMessage && (
+              <p className="mt-3 text-sm font-medium text-primary">{feedbackMessage}</p>
+            )}
+
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <button
+                type="button"
+                disabled={isFeedbackSending}
+                onClick={sendFeedback}
+                className="rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isFeedbackSending ? "Отправляю..." : "Отправить отзыв"}
+              </button>
+              <button
+                type="button"
+                onClick={returnToMenu}
+                className="rounded-md border border-border bg-background px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                На главный экран
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {screen === "reviews" && (
+        <div className="flex w-full max-w-4xl flex-1 flex-col py-4">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={returnToMenu}
+              className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary"
+            >
+              ← Назад
+            </button>
+            <div className="text-right">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-foreground">
+                Отзывы
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Все отзывы игроков
+              </p>
+            </div>
+          </div>
+
+          <div className="grid flex-1 content-start gap-4 py-8">
+            {isReviewsLoading && (
+              <p className="text-center text-sm text-muted-foreground">Загружаю отзывы...</p>
+            )}
+            {reviewsError && (
+              <p className="text-center text-sm text-destructive">{reviewsError}</p>
+            )}
+            {!isReviewsLoading && !reviewsError && reviews.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground">Отзывов пока нет.</p>
+            )}
+            {reviews.map((review) => (
+              <article key={review.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-xl text-primary">
+                    {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                  </div>
+                  <time className="text-xs text-muted-foreground">
+                    {new Date(review.createdAt).toLocaleString("ru-RU")}
+                  </time>
+                </div>
+                <p className="mt-3 whitespace-pre-wrap text-sm text-card-foreground">
+                  {review.improvement || "Без комментария"}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+
       {screen === "end" && (
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <h2 className="font-display text-5xl font-normal tracking-tight text-foreground sm:text-6xl">
@@ -492,8 +715,15 @@ function Index() {
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={startGame}
+              onClick={copyGameLink}
               className="rounded-md bg-primary px-10 py-4 text-base font-medium text-primary-foreground shadow-sm transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
+            >
+              Поделиться
+            </button>
+            <button
+              type="button"
+              onClick={startGame}
+              className="rounded-md border border-border bg-card px-10 py-4 text-base font-medium text-card-foreground shadow-sm transition-colors duration-150 hover:bg-secondary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
             >
               Играть заново
             </button>
